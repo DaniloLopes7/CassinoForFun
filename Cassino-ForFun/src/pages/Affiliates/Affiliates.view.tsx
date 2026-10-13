@@ -1,0 +1,189 @@
+import { useState } from "react";
+import Skeleton from "react-loading-skeleton";
+import { FiCopy } from "react-icons/fi";
+import MainButton from "../../components/MainButton";
+import Monetary from "../../components/Monetary";
+import Avatar from "../../components/Avatar";
+import { ReferralDashboard, ReferralRow } from "../../services/referrals/ReferralServices";
+import i18n from "../../i18n";
+
+interface Props {
+  userData: any;
+  data: ReferralDashboard | null;
+  loading: boolean;
+  error: boolean;
+  saving: boolean;
+  claiming: boolean;
+  saveCode: (code: string) => void;
+  claim: () => void;
+  copyLink: () => void;
+  link: string;
+}
+
+const StatCard = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="bg-surface rounded-lg p-4 flex flex-col items-center gap-1">
+    <span className="text-sm text-ink-muted">{label}</span>
+    <span className="text-xl font-semibold text-ink">{children}</span>
+  </div>
+);
+
+const ReferralTable = ({ referrals, milestoneLevel }: { referrals: ReferralRow[]; milestoneLevel: number }) => (
+  <div className="overflow-x-auto">
+    <table className="w-full text-left text-sm">
+      <thead>
+        <tr className="text-ink-muted">
+          <th className="font-medium py-2 pr-4">{i18n.t("affiliates.user")}</th>
+          <th className="font-medium py-2 pr-4">{i18n.t("affiliates.joined")}</th>
+          <th className="font-medium py-2 pr-4">{i18n.t("affiliates.level")}</th>
+          <th className="font-medium py-2 pr-4">{i18n.t("affiliates.totalWagered")}</th>
+          <th className="font-medium py-2 pr-4">{i18n.t("affiliates.commissionEarned")}</th>
+          <th className="font-medium py-2">{i18n.t("affiliates.status")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {referrals.map((r) => (
+          <tr key={r.id} className="border-t border-line">
+            <td className="py-3 pr-4">
+              <div className="flex items-center gap-3">
+                <Avatar image={r.profilePicture} loading={false} id={r.id} size="small" level={0} />
+                <span className="text-ink">{r.username}</span>
+              </div>
+            </td>
+            <td className="py-3 pr-4 text-ink-soft">{new Date(r.joinedAt).toLocaleDateString()}</td>
+            <td className="py-3 pr-4 text-ink-soft">
+              {r.level}
+              {r.milestonePaid && (
+                <span
+                  className="ml-2 text-xs px-1.5 py-0.5 rounded bg-accent-gold/15 text-accent-gold"
+                  title={i18n.t("affiliates.reachedLevel", { level: milestoneLevel })}
+                >
+                  {i18n.t("affiliates.paid")}
+                </span>
+              )}
+            </td>
+            <td className="py-3 pr-4 text-ink-soft">
+              <Monetary value={r.wagered} />
+            </td>
+            <td className="py-3 pr-4 text-green-400">
+              <Monetary value={r.commission} />
+            </td>
+            <td className={`py-3 ${r.active ? "text-green-400" : "text-accent-ruby"}`}>
+              {r.active ? "Active" : "Inactive"}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
+const AffiliatesView: React.FC<Props> = ({
+  userData, data, loading, error, saving, claiming, saveCode, claim, copyLink, link,
+}) => {
+  const [draftCode, setDraftCode] = useState<string>("");
+
+  if (!userData) {
+    return <div className="w-full flex justify-center py-16 text-ink-soft">{i18n.t("affiliates.signInToRefer")}</div>;
+  }
+  if (loading) {
+    return (
+      <div className="w-full max-w-[1100px]">
+        <Skeleton height={320} borderRadius={12} highlightColor="#050505" baseColor="#050505" />
+      </div>
+    );
+  }
+  if (error || !data) {
+    return <div className="w-full flex justify-center py-16 text-ink-muted">{i18n.t("affiliates.couldNotLoadYour")}</div>;
+  }
+  if (!data.enabled) {
+    return <div className="w-full flex justify-center py-16 text-ink-muted">{i18n.t("affiliates.referralsAreTurnedOff")}</div>;
+  }
+
+  const { totals } = data;
+
+  return (
+    <div className="w-full max-w-[1100px] flex flex-col gap-6">
+        <p className="text-ink-muted">
+          Bring a friend: they start with <span className="text-accent-gold">+{data.refereeBonus} R$</span>, you
+          get <span className="text-accent-gold">+{data.referrerBonus} R$</span>, and when they reach level{" "}
+          {data.milestoneLevel} you earn <span className="text-accent-gold">+{data.milestoneBonus.toLocaleString()} R$</span> more.
+          On top, <span className="text-accent-gold">{Math.round(data.commissionRate * 100)}%</span> of everything
+          they wager is yours to claim.
+        </p>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard label={i18n.t("affiliates.totalEarned")}>
+            <span className="text-accent-gold">
+              <Monetary value={totals.earned} />
+            </span>
+          </StatCard>
+          <StatCard label={i18n.t("affiliates.totalWageredByReferrals")}>
+            <Monetary value={totals.totalWagered} />
+          </StatCard>
+          <StatCard label={i18n.t("affiliates.referrals")}>{totals.referralCount}</StatCard>
+          <StatCard label={i18n.t("affiliates.activeThisWeek")}>
+            <span className="text-green-400">{totals.activeCount}</span>
+          </StatCard>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="bg-surface rounded-lg p-5 flex flex-col gap-3">
+            <h2 className="text-ink font-semibold">{i18n.t("affiliates.yourReferralLink")}</h2>
+            {data.referralCode ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-surface-nav rounded-md px-3 py-2 text-ink-soft text-sm truncate">{link}</div>
+                <button
+                  onClick={copyLink}
+                  className="flex items-center gap-2 bg-surface-raised hover:bg-surface-hover transition-all rounded-md px-3 py-2 text-ink text-sm"
+                >
+                  <FiCopy /> Copy
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  value={draftCode}
+                  onChange={(e) => setDraftCode(e.target.value.toUpperCase())}
+                  placeholder="PICKACODE"
+                  maxLength={16}
+                  className="flex-1 bg-surface-nav rounded-md px-3 py-2 text-ink text-sm focus:outline-none"
+                />
+                <MainButton text={i18n.t("affiliates.save")} onClick={() => saveCode(draftCode)} disabled={saving || draftCode.length < 3} loading={saving} />
+              </div>
+            )}
+            <p className="text-xs text-ink-muted">
+              {data.referralCode
+                ? i18n.t("affiliates.shareItAnywhereThe")
+                : "3-16 letters or numbers. Choose well, it cannot be changed later."}
+            </p>
+          </div>
+
+          <div className="bg-surface rounded-lg p-5 flex flex-col gap-3">
+            <h2 className="text-ink font-semibold">{i18n.t("affiliates.availableEarnings")}</h2>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-2xl font-semibold text-green-400">
+                <Monetary value={totals.available} />
+              </span>
+              <MainButton text={i18n.t("affiliates.claim")} onClick={claim} disabled={claiming || totals.available < 1} loading={claiming} />
+            </div>
+            <p className="text-xs text-ink-muted">
+              Already claimed <Monetary value={totals.claimed} /> in commission.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-surface rounded-lg p-5">
+          <h2 className="text-ink font-semibold mb-3">{i18n.t("affiliates.yourReferrals")}</h2>
+          {data.referrals.length === 0 ? (
+            <p className="text-ink-muted text-sm py-6 text-center">
+              {i18n.t("affiliates.noOneYetShare")}
+            </p>
+          ) : (
+            <ReferralTable referrals={data.referrals} milestoneLevel={data.milestoneLevel} />
+          )}
+        </div>
+    </div>
+  );
+};
+
+export default AffiliatesView;

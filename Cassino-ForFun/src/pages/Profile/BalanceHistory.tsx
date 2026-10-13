@@ -1,0 +1,119 @@
+import { useEffect, useState } from "react";
+import Skeleton from "react-loading-skeleton";
+import { getTransactions } from "../../services/users/UserServices";
+import Monetary from "../../components/Monetary";
+import Pagination from "../../components/Pagination";
+import i18n from "../../i18n";
+
+interface Transaction {
+  _id: string;
+  type: string;
+  direction: "credit" | "debit";
+  amount: number;
+  balanceAfter?: number;
+  meta?: any;
+  createdAt: string;
+}
+
+// the labels resolve per call rather than sitting in a module map, which would hold
+// whatever language the bundle loaded in
+const describe = (tx: Transaction): string => {
+  const base = i18n.exists(`balance.${tx.type}`) ? i18n.t(`balance.${tx.type}`) : tx.type;
+  const m = tx.meta || {};
+  if (tx.type === "market_buy" && m.reversal) return i18n.t("balance.purchaseReversed");
+  if (tx.type === "case_open" && m.caseTitle) {
+    return m.quantity > 1
+      ? i18n.t("balance.openedCasePlural", { case: m.caseTitle, count: m.quantity })
+      : i18n.t("balance.openedCase", { case: m.caseTitle });
+  }
+  if ((tx.type === "market_buy" || tx.type === "market_sale") && m.itemName) {
+    return i18n.t("balance.withItem", { label: base, item: m.itemName });
+  }
+  if (tx.type === "item_sell" && m.count) {
+    const key = m.count > 1 ? "balance.soldToShopPlural" : "balance.soldToShop";
+    return i18n.t(key, { count: m.count });
+  }
+  if (tx.type === "mission_reward" && m.missionTitle) {
+    return i18n.t("balance.missionReward", { mission: m.missionTitle });
+  }
+  if ((tx.type === "market_order" || tx.type === "market_order_refund") && m.itemName) {
+    return i18n.t("balance.withItem", { label: base, item: m.itemName });
+  }
+  return base;
+};
+
+const formatDate = (iso: string): string => {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+};
+
+const BalanceHistory: React.FC = () => {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getTransactions(page)
+      .then((data) => {
+        if (!active) return;
+        setTransactions(data.transactions || []);
+        setTotalPages(data.totalPages || 1);
+      })
+      .catch((error) => console.log(error))
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [page]);
+
+  return (
+    <div className="w-full max-w-[900px] flex flex-col gap-2">
+      {loading ? (
+        [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <Skeleton key={i} height={64} baseColor="#050505" highlightColor="#050505" />
+        ))
+      ) : transactions.length === 0 ? (
+        <div className="text-center text-[#84819a] py-12">{i18n.t("profile.noTransactionsYet")}</div>
+      ) : (
+        transactions.map((tx) => {
+          const credit = tx.direction === "credit";
+          return (
+            <div
+              key={tx._id}
+              className="flex items-center justify-between gap-3 bg-[#050505] rounded-lg px-4 py-3"
+            >
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold truncate">{describe(tx)}</span>
+                <span className="text-xs text-[#84819a]">{formatDate(tx.createdAt)}</span>
+              </div>
+              <div className="flex flex-col items-end shrink-0">
+                <span className={`font-bold ${credit ? "text-green-400" : "text-accent-ruby"}`}>
+                  {credit ? "+" : "-"}
+                  <Monetary value={tx.amount} />
+                </span>
+                {typeof tx.balanceAfter === "number" && (
+                  <span className="text-xs text-[#84819a] flex items-center gap-1">
+                    balance <Monetary value={tx.balanceAfter} />
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })
+      )}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-3">
+          <Pagination totalPages={totalPages} currentPage={page} setPage={setPage} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default BalanceHistory;

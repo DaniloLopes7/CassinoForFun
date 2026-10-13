@@ -1,0 +1,24 @@
+{
+  "Basic Touhou": {
+    "price": 100,
+    "cover": "https://kanicasino.com/public/images/banners/blue-archive-lockup.webp",
+    "category": "Touhou",
+    "items": [
+      { "name": "Reimu Hat", "rarity": "1", "image": "https://kanicasino.com/public/images/cards/reimu.webp" },
+      { "name": "Marisa Broom", "rarity": "2", "image": "https://kanicasino.com/public/images/cards/marisa.webp" },
+      { "name": "Sakuya Knife", "rarity": "3", "image": "https://kanicasino.com/public/images/cards/sakuya.webp" },
+      { "name": "Remilia Bat", "rarity": "4", "image": "https://kanicasino.com/public/images/cards/remilia.webp" },
+      { "name": "Yukari Gap", "rarity": "5", "image": "https://kanicasino.com/public/images/cards/yukari.webp" }
+    ]
+  },
+  "Premium Touhou": {
+    "price": 500,
+    "cover": "https://kanicasino.com/public/images/banners/counter-strike-lockup.webp",
+    "category": "Touhou",
+    "items": [
+      { "name": "Golden Reimu", "rarity": "3", "image": "https://kanicasino.com/public/images/cards/reimu.webp" },
+      { "name": "Platinum Marisa", "rarity": "4", "image": "https://kanicasino.com/public/images/cards/marisa.webp" },
+      { "name": "Diamond Yukari", "rarity": "5", "image": "https://kanicasino.com/public/images/cards/yukari.webp" }
+    ]
+  }
+}

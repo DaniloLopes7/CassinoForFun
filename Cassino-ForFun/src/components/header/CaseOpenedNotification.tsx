@@ -1,0 +1,129 @@
+import React, { useState } from "react";
+import { GiUpgrade } from "react-icons/gi";
+import Rarities from "../Rarities";
+import { Link } from "react-router-dom";
+import { BasicItem } from "../Types";
+import Badge from "../Badge";
+import { Badge as BadgeData } from "../../services/badges/BadgeService";
+import i18n from "../../i18n";
+
+interface CaseOpenedNotificationProps {
+  user: {
+    name: string;
+    profilePicture: string;
+    id: string;
+    badge?: BadgeData | null;
+  };
+  item: BasicItem;
+  caseImage: string;
+  // undefined for an opening, which is what every drop in the feed used to be
+  source?: string;
+  // how many more came out of the same opening, and are not drawn
+  others?: number;
+}
+
+
+const CaseOpenedNotification: React.FC<CaseOpenedNotificationProps> = ({
+  user, item, caseImage, source, others = 0
+}) => {
+  const [isHovering, setIsHovering] = useState<boolean>(false);
+
+  const getColor = (e: number) => {
+    return Rarities.find((rarity) => rarity.id == e)?.color;
+  };
+
+
+  return (
+    // css keyframes, not react-driven transitions: they run on dom insertion, so the entry
+    // can't be skipped when react batches the mount and the state flip into one paint
+    <div className="h-28 w-40 shrink-0 overflow-hidden animate-livedrop-gap">
+    <div
+      className="flex flex-col w-full h-28 items-center animate-livedrop-fall border bg-[#141225]"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      style={{
+        borderColor: `${getColor(item.rarity)} transparent ${getColor(
+          item.rarity
+        )}  #1e1b38 `,
+      }}
+    >
+      <div style={{
+        width: "100%",
+        transition: "all 0.3s ease",
+        transform: `${isHovering ? "rotateY(180deg)" : "rotateY(0deg)"}`,
+      }}>
+        <div className={`flex flex-col transition-all w-full items-center space-x-2 relative ${isHovering ? "opacity-0" : "opacity-100"}`}>
+          {source === "upgrade" && (
+            <span
+              className="absolute left-1 top-1 z-20 text-[#ECA823]"
+              title={i18n.t("upgrade.wonByUpgrading")}
+            >
+              <GiUpgrade className="text-sm" />
+            </span>
+          )}
+          {others > 0 && (
+            <span
+              className="absolute right-1 top-1 z-20 rounded bg-[#1e1b38] px-1 text-[10px] font-bold text-[#c9c6de]"
+              title={i18n.t("common.andMoreFromThisOpening", { count: others })}
+            >
+              +{others}
+            </span>
+          )}
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-20 h-20  z-10 object-cover rounded-lg p-2"
+          />
+          <div
+            className="absolute top-1/2 left-1/2"
+            style={{
+              width: "1px",
+              boxShadow: `0px 0px 40px 25px ${Rarities.find((rarity) => rarity.id == item.rarity)?.color
+                }`,
+            }}
+          />
+          {/* skin names like "M4A1-S | Dark Horse" used to run past the card and shove
+              the next drop sideways; clamp to two lines and ellipsis the rest */}
+          <div className="text-white z-10 w-full px-1 text-center text-xs leading-tight break-words line-clamp-2" title={item.name}>
+            {item.name}
+          </div>
+        </div>
+        <div className={`absolute top-0 w-full h-full  flex flex-col transition-all duration-300 items-center ${isHovering ? "opacity-100" : "opacity-0"}`}
+          style={{
+            transform: `rotateY(180deg)`,
+          }}
+        >
+          <Link to={`case/${item.case}`} className="z-10">
+            <img
+              src={caseImage}
+              alt={"case"}
+              className="h-20 object-cover rounded-full p-2 pb-0"
+            /></Link>
+          <div
+            className="absolute top-1/2 left-1/2"
+            style={{
+              width: "1px",
+              boxShadow: `0px 0px 40px 25px ${Rarities.find((rarity) => rarity.id == item.rarity)?.color
+                }`,
+            }}
+          />
+          <Link to={`profile/${user.id}`} className="absolute -bottom-2 flex items-center">
+            <img
+              src={user.profilePicture}
+              alt={"case"}
+              className="w-12 h-12  z-10 object-cover rounded-full p-2 transition-all hover:scale-110 "
+            />
+            <div className="z-10 flex items-center gap-1.5 text-base text-white">
+              <Badge badge={user.badge} linked={false} />
+              {user.name.length > 20 ? `${user.name.slice(0, 20)}...` : user.name}
+            </div>
+          </Link>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  );
+};
+
+export default CaseOpenedNotification;

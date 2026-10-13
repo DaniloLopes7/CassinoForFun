@@ -1,0 +1,98 @@
+{
+  "site": "https://kanicasino.com",
+  "name": "BreakCassino",
+  "defaultDescription": "BreakCassino is a free case opening simulator. Open CS2 cases, gacha character cases and Touhou cases with fake coins. No real money involved.",
+  "defaultImage": "https://i.imgur.com/2NEJRGB.jpg",
+  "categories": {
+    "Counter-Strike": "CS2 Case Simulator",
+    "Blue Archive": "Blue Archive Gacha Simulator",
+    "Uma Musume": "Uma Musume Gacha Simulator",
+    "Touhou": "Touhou Casino",
+    "Animals": "Case Simulator"
+  },
+  "defaultCategoryPhrase": "Case Simulator",
+  "caseMeta": {
+    "title": "{name} | {phrase} | BreakCassino",
+    "description": "Open the {name} for R${price} on BreakCassino, a free provably fair {phrase}. Fake coins, no real money involved."
+  },
+  "static": {
+    "/": {
+      "title": "BreakCassino",
+      "description": "Open CS2 cases, sticker capsules, gacha character cases and Touhou cases for free with fake coins. Provably fair, with Crash, Slots and case battles."
+    },
+    "/crash": {
+      "title": "Crash | BreakCassino",
+      "description": "Cash out before it burns. A live multiplayer crash game, played with fake coins."
+    },
+    "/coinflip": {
+      "title": "Coin Flip | BreakCassino",
+      "description": "Heads or tails against another player, live. No real money involved."
+    },
+    "/upgrade": {
+      "title": "Upgrade | BreakCassino",
+      "description": "Gamble your items for a shot at a better one. Provably fair, no real money involved."
+    },
+    "/slot": {
+      "title": "Slots | BreakCassino",
+      "description": "Spin the reels for fake coins. Provably fair, no real money involved."
+    },
+    "/plinko": {
+      "title": "Plinko | BreakCassino",
+      "description": "Drop a ball down the pegs and chase the golden edge bins. Provably fair, no real money involved."
+    },
+    "/dice": {
+      "title": "Dice | BreakCassino",
+      "description": "Set your target, roll over or under, and chase up to 49.50x. Provably fair, no real money involved."
+    },
+    "/mines": {
+      "title": "Mines | BreakCassino",
+      "description": "Reveal diamonds and dodge the bombs. Cash out any time. Provably fair, no real money involved."
+    },
+    "/hilo": {
+      "title": "HiLo | BreakCassino",
+      "description": "Predict higher or lower, build a multiplier, and cash out before you miss. Provably fair, no real money involved."
+    },
+    "/battles": {
+      "title": "Case Battles | BreakCassino",
+      "description": "Open cases head to head against other players. Best total value takes the pot."
+    },
+    "/provably-fair": {
+      "title": "Provably Fair | BreakCassino",
+      "description": "Verify any roll for yourself: server seed hashes, your client seed, and the nonce behind every drop."
+    },
+    "/privacy-policy": {
+      "title": "Privacy Policy | BreakCassino",
+      "description": "How BreakCassino handles your data."
+    },
+    "/terms": {
+      "title": "Terms of Service | BreakCassino",
+      "description": "The rules for using BreakCassino. Fictional currency, no real money, no prizes."
+    },
+    "/predictions": {
+      "title": "Predictions | Player Prediction Markets | BreakCassino",
+      "description": "Buy shares in what you think happens next. Anime, gaming and site markets priced by the players, settled in fake coins."
+    }
+  },
+  "dynamic": [
+    {
+      "pattern": "^/case/",
+      "title": "Open a case | Case Simulator | BreakCassino",
+      "description": "Open this case for a shot at its rarest drops on BreakCassino, a free provably fair case simulator. Fake coins, no real money involved."
+    },
+    {
+      "pattern": "^/profile/",
+      "title": "Profile | BreakCassino",
+      "description": "A player's inventory, collections and stats on BreakCassino."
+    },
+    {
+      "pattern": "^/battles/",
+      "title": "Case Battle | BreakCassino",
+      "description": "A live case battle on BreakCassino."
+    },
+    {
+      "pattern": "^/predictions/",
+      "title": "Prediction market | BreakCassino",
+      "description": "Live odds, price history and the trades behind them on this BreakCassino prediction market."
+    }
+  ]
+}
