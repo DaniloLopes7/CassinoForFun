@@ -111,3 +111,9 @@ docker-compose.yml
 npm run test:backend         # suite jest
 npm run build                # build de producao do frontend (dist/)
 ```
+Autor
+
+Danilo Almeida Lopes — estudante de Ciência de Dados.
+Licença
+
+MIT — veja LICENSE.
