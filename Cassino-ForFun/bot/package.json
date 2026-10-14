@@ -1,16 +1,16 @@
 {
-  "name": "kanicasino-bot",
-  "version": "1.1.0",
-  "description": "Discord bot for KaniCasino",
+  "name": "dbet-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord DBET (read-only): ranking, perfil e link de conta",
   "main": "src/index.js",
-  "private": true,
   "scripts": {
     "start": "node src/index.js",
-    "register": "node src/register.js",
-    "test": "node --test src/messages.test.js src/spin.test.js src/menu.test.js"
+    "register": "node src/register.js"
   },
+  "license": "MIT",
   "dependencies": {
-    "discord.js": "^14.16.3",
+    "axios": "^1.7.7",
+    "discord.js": "^14.16.2",
     "dotenv": "^16.4.5"
   }
 }

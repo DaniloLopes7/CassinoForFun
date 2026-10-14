@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-base text-ink font-body antialiased;
+  background-image: radial-gradient(1200px 600px at 80% -10%, rgba(245, 197, 66, 0.07), transparent),
+    radial-gradient(900px 500px at 0% 100%, rgba(27, 16, 48, 0.9), transparent);
+  background-attachment: fixed;
+}
+
+/* Numeros tabulares: saldo/apostas nao "pulam" ao atualizar */
+.tabular,
+[data-money],
+.odds,
+.balance {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* Componentes do design system */
+.dbet-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px];
+}
+.dbet-btn-gold {
+  @apply dbet-btn bg-gold text-base hover:bg-gold-bright active:scale-[.98];
+}
+.dbet-btn-ghost {
+  @apply dbet-btn bg-surface text-ink border border-line hover:bg-card;
+}
+.dbet-btn-danger {
+  @apply dbet-btn bg-danger text-white hover:brightness-110 active:scale-[.98];
+}
+.dbet-btn-felt {
+  @apply dbet-btn bg-felt text-white hover:brightness-110 active:scale-[.98];
+}
+.dbet-card {
+  @apply bg-deep border border-line rounded-xl shadow-card;
+}
+.dbet-input {
+  @apply w-full bg-base border border-line rounded-lg px-3 py-2 text-ink placeholder-ink-faint focus:outline-none focus:border-gold min-h-[44px] tabular;
+}
+.dbet-label {
+  @apply text-xs uppercase tracking-wide text-ink-muted font-semibold;
+}
+.dbet-chip {
+  @apply inline-flex items-center gap-1 rounded-full bg-surface border border-line px-2.5 py-1 text-xs font-semibold;
+}
+
+/* Barra de scroll discreta */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  @apply bg-line rounded-full;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Acessibilidade: reduzir animacoes */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Foco visivel (WCAG) */
+:focus-visible {
+  outline: 2px solid #f5c542;
+  outline-offset: 2px;
+}

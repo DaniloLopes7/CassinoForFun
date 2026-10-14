@@ -1,9 +1,0 @@
-User-agent: *
-Allow: /
-
-# per-user and per-round pages: endless urls, nothing to rank for
-Disallow: /profile/
-Disallow: /battles/
-Disallow: /marketplace/item/
-
-Sitemap: https://kanicasino.com/sitemap.xml

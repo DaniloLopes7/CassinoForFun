@@ -1,0 +1,48 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: dbet-mongo
+    command: --replSet rs0 --bind_ip_all
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    image: node:20
+    container_name: dbet-backend
+    working_dir: /app
+    command: node index.js
+    env_file:
+      - ./backend/.env # JWT_SECRET, MONGO_URI, ODDS_API_KEY, ADMIN_EMAILS etc.
+    environment:
+      # MONGO_URI vem do backend/.env (localhost p/ dev ou Atlas p/ producao)
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-admin@dbet.app}
+    # O servico mongo so e necessario se MONGO_URI apontar para o container local;
+    # com Atlas configure MONGO_URI no backend/.env e pode ignorar/parar o dbet-mongo.
+    profiles: []
+    volumes:
+      - ./backend:/app # inclui node_modules do host (glibc compativel)
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+
+  frontend:
+    image: node:20
+    container_name: dbet-frontend
+    working_dir: /app
+    command: npm run dev -- --host 0.0.0.0
+    environment:
+      VITE_API_TARGET: http://backend:5000
+      # Google OAuth (opcional): expor ao bundle Vite
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:

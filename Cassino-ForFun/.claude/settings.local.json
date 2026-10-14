@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "WebFetch(domain:www.mytopfun.com)",
-      "WebFetch(domain:slotguruua.com)"
-    ]
-  }
-}

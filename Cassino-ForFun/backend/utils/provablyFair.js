@@ -1,76 +1,52 @@
-const crypto = require("crypto");
+/**
+ * DBET Provably Fair
+ * -------------------
+ * Cada usuario possui:
+ *  - serverSeed  : segredo do servidor (revelado ao rotacionar)
+ *  - serverSeedHash : sha256(serverSeed) — publicado antes das apostas (commitment)
+ *  - clientSeed  : editavel pelo usuario
+ *  - nonce       : incrementa a cada aposta
+ *
+ * Sorteio: HMAC-SHA256(serverSeed, `${clientSeed}:${nonce}:${cursor}`)
+ * Os 52 primeiros bits do digest viram um float uniforme em [0, 1).
+ * Para multiplos sorteios na mesma aposta, incrementa-se o cursor.
+ *
+ * Qualquer um pode verificar no front (pagina /fair) reproduzindo o HMAC.
+ */
+const crypto = require('crypto');
 
-// the roll space. every game maps a roll in [1, TOTAL] to an outcome; case items
-// partition [1, TOTAL] into contiguous ranges (skin.club-style: 1..100000).
-const TOTAL = 100_000;
-
-// number of digest bytes folded into the [0,1) float. 4 bytes (32 bits) is the
-// widely-implemented "stake" standard so any third-party tool reproduces the roll.
-const FLOAT_BYTES = 4;
-
-function generateServerSeed() {
-  return crypto.randomBytes(32).toString("hex");
+function sha256(text) {
+  return crypto.createHash('sha256').update(text).digest('hex');
 }
 
-// the public commitment shown before any roll; sha256(serverSeed).
-function hashServerSeed(serverSeed) {
-  return crypto.createHash("sha256").update(serverSeed).digest("hex");
+function randomServerSeed() {
+  return crypto.randomBytes(32).toString('hex');
 }
 
-function generateClientSeed() {
-  return crypto.randomBytes(16).toString("hex");
-}
-
-// HMAC-SHA256(key=serverSeed, msg=`${clientSeed}:${nonce}:${cursor}`) folded into a
-// uniform float in [0,1) from the first FLOAT_BYTES bytes. `cursor` yields extra
-// independent draws under one nonce (e.g. the 9 slot reels).
-function rollFloat(serverSeed, clientSeed, nonce, cursor = 0) {
-  const digest = crypto
-    .createHmac("sha256", serverSeed)
+/** Float uniforme em [0,1) com 52 bits de entropia. */
+function fairFloat(serverSeed, clientSeed, nonce, cursor = 0) {
+  const hmac = crypto
+    .createHmac('sha256', serverSeed)
     .update(`${clientSeed}:${nonce}:${cursor}`)
-    .digest();
+    .digest('hex');
+  // 13 chars hex = 52 bits
+  const value = parseInt(hmac.slice(0, 13), 16);
+  return value / Math.pow(2, 52);
+}
 
-  let result = 0;
-  for (let i = 0; i < FLOAT_BYTES; i++) {
-    result += digest[i] / 256 ** (i + 1);
+/** Inteiro uniforme em [0, maxExclusive). */
+function fairInt(serverSeed, clientSeed, nonce, cursor, maxExclusive) {
+  return Math.floor(fairFloat(serverSeed, clientSeed, nonce, cursor) * maxExclusive);
+}
+
+/** Embaralhamento Fisher-Yates determinístico para sapato de cartas. */
+function fairShuffle(serverSeed, clientSeed, nonce, size) {
+  const arr = Array.from({ length: size }, (_, i) => i);
+  for (let i = size - 1; i > 0; i--) {
+    const j = fairInt(serverSeed, clientSeed, nonce, i, i + 1);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  return result; // [0, 1)
+  return arr;
 }
 
-// map a [0,1) float to an integer roll in [1, total].
-function toRollInt(float, total = TOTAL) {
-  return Math.floor(float * total) + 1;
-}
-
-// convenience: the integer roll for a single draw.
-function roll(serverSeed, clientSeed, nonce, { total = TOTAL, cursor = 0 } = {}) {
-  return toRollInt(rollFloat(serverSeed, clientSeed, nonce, cursor), total);
-}
-
-// given an ascending rangeTable of { start, end, ... } covering [1, total], return
-// the entry whose [start, end] contains rollInt (binary search).
-function pickFromRanges(rollInt, rangeTable) {
-  let lo = 0;
-  let hi = rangeTable.length - 1;
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1;
-    const r = rangeTable[mid];
-    if (rollInt < r.start) hi = mid - 1;
-    else if (rollInt > r.end) lo = mid + 1;
-    else return r;
-  }
-  // ranges always cover [1, total], so this is only reached on a malformed table
-  return rangeTable[rangeTable.length - 1] || null;
-}
-
-module.exports = {
-  TOTAL,
-  FLOAT_BYTES,
-  generateServerSeed,
-  hashServerSeed,
-  generateClientSeed,
-  rollFloat,
-  toRollInt,
-  roll,
-  pickFromRanges,
-};
+module.exports = { sha256, randomServerSeed, fairFloat, fairInt, fairShuffle };
