@@ -45,3 +45,8 @@ backend/scripts/buyAllItems.js
 
 # banner renders; the shipped webp lives in public/images/banners
 tools/banners/out/
+mongo-backup/
+
+# Configuracoes locais de agentes/IA
+.claude/
+.agents/
